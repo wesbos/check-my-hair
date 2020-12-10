@@ -37,8 +37,7 @@ async function requestIntialAccess() {
     video: true,
   });
   console.log('initial stream');
-  let cameras = await getCameras();
-  cameras = cameras.slice(0, 1);
+  const cameras = await getCameras();
   // See how many streams we are allowed access to
   const streamPromises = cameras.map(function (camera) {
     return navigator.mediaDevices.getUserMedia({
