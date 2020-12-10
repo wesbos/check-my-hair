@@ -59,7 +59,9 @@ async function requestIntialAccess() {
   // Assign the src media of each camera to the video elements
   const videoElements = videoHolder.querySelectorAll('video');
   videoElements.forEach((el, i) => {
+    if(streams){
     el.srcObject = streams[i];
+    }
   });
 }
 
