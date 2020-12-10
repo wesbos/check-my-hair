@@ -1,32 +1,11 @@
 import { getFriendlyErrorMessage } from './errorMessages';
 
-const video1: HTMLVideoElement = document.querySelector('video.video1');
-const video2: HTMLVideoElement = document.querySelector('video.video2');
 const videoHolder: HTMLDivElement = document.querySelector('.video');
 const text: HTMLParagraphElement = document.querySelector('.text');
 const startbutton: HTMLButtonElement = document.querySelector('.start-camera');
 
 function handleError(err: MediaStreamError) {
   text.textContent = getFriendlyErrorMessage(err);
-}
-
-async function getWebCam() {
-  const stream = await navigator.mediaDevices
-    .getUserMedia({
-      audio: false,
-      video: {
-        width: {
-          ideal: 3840,
-        },
-        height: {
-          ideal: 2160,
-        },
-      },
-    })
-    .catch(handleError);
-  console.log('returning stream');
-  await getDevices();
-  return stream;
 }
 
 async function getCameras() {
@@ -79,11 +58,6 @@ async function requestIntialAccess() {
   videoElements.forEach((el, i) => {
     el.srcObject = streams[i];
   });
-}
-
-async function go(): Promise<void> {
-  const stream = await getWebCam();
-  if (video1 && stream) video1.srcObject = stream;
 }
 
 startbutton.addEventListener('click', requestIntialAccess);
