@@ -10,8 +10,9 @@ function handleError(err: MediaStreamError) {
 
 async function getCameras() {
   const devices = await navigator.mediaDevices.enumerateDevices();
-  const cameras = devices.filter((device) => device.kind === 'videoinput');
-  // .filter((device) => !device.label.includes('Camo'));
+  const cameras = devices
+    .filter((device) => device.kind === 'videoinput')
+    .filter((device) => !device.label.includes('Camo'));
   // camera 2
   return cameras;
 }
@@ -19,7 +20,7 @@ async function getCameras() {
 function createVideoElementFromCamera(camera: MediaDeviceInfo) {
   const markup = `
     <div class="camera">
-      <video autoplay></video>
+      <video autoplay playsinline muted></video>
       <p>${camera.label}</p>
     </div>
   `;
@@ -28,6 +29,9 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo) {
 }
 
 async function requestIntialAccess() {
+  // clear out old cameras
+  videoHolder.innerHTML = '';
+  console.log(navigator);
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
     video: true,
@@ -61,3 +65,5 @@ async function requestIntialAccess() {
 }
 
 startbutton.addEventListener('click', requestIntialAccess);
+
+requestIntialAccess();
