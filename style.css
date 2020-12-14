@@ -51,6 +51,7 @@ video {
   pointer-events: none;
   height: auto;
   max-height: 100vh;
+  transform: scaleX(-1);
 }
 
 .video {
