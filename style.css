@@ -26,7 +26,7 @@ body {
   text-align: center;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr auto;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--blue);
   padding: 3%;
 }
@@ -94,6 +94,8 @@ button:hover {
   color: white;
   grid-row: 2;
   font-size: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 a {
