@@ -16,6 +16,7 @@ html {
 body {
   padding: 0;
   margin: 0;
+  background: var(--blue);
 }
 
 .wrap {
@@ -26,8 +27,7 @@ body {
   text-align: center;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr auto;
-  height: 100vh;
-  background: var(--blue);
+  /* height: 100vh; */
   padding: 3%;
 }
 
@@ -58,6 +58,12 @@ video {
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   grid-gap: 20px;
   align-items: center;
+}
+
+@media (max-width: 500px) {
+  .video {
+    grid-template-columns: 1fr;
+  }
 }
 
 .camera {
@@ -94,6 +100,7 @@ button:hover {
   color: white;
   grid-row: 2;
   font-size: 10px;
+  text-align: center;
 }
 
 a {
