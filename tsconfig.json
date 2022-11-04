@@ -1,23 +1,14 @@
 {
-  "extends": "eslint-config-wesbos/tsconfig.json",
   "include": [
-    "**/*.*"
+    "./**/*"
   ],
   "compilerOptions": {
-    "types": [],
     "strict": true,
-    "strictNullChecks": false,
-    "target": "ES6",
-    "module": "ES6",
     "lib": [
-      "ES6",
-      "ES2015",
-      "ES7",
-      "ES2016",
-      "ES2017",
-      "ES2018",
       "ESNext",
       "DOM",
-    ]
-  },
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true
+  }
 }

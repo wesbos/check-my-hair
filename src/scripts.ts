@@ -1,10 +1,11 @@
 import { getFriendlyErrorMessage } from './errorMessages';
 
-const videoHolder: HTMLDivElement = document.querySelector('.video');
-const text: HTMLParagraphElement = document.querySelector('.text');
-const startbutton: HTMLButtonElement = document.querySelector('.start-camera');
+const videoHolder = document.querySelector<HTMLDivElement>('.video');
+const text = document.querySelector<HTMLParagraphElement>('.text');
+const startbutton = document.querySelector<HTMLButtonElement>('.start-camera');
 
-function handleError(err: MediaStreamError) {
+function handleError(err: Error) {
+  if (!text) throw new Error('shit');
   text.textContent = getFriendlyErrorMessage(err);
 }
 
@@ -29,9 +30,10 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo) {
 }
 
 async function requestIntialAccess() {
+  // Check elements exist
+  if (!videoHolder) return;
   // clear out old cameras
   videoHolder.innerHTML = '';
-  console.log(navigator);
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
     video: true,
@@ -39,12 +41,12 @@ async function requestIntialAccess() {
   console.log('initial stream');
   const cameras = await getCameras();
   // See how many streams we are allowed access to
-  const streamPromises = cameras.map(function (camera) {
-    return navigator.mediaDevices.getUserMedia({
+  const streamPromises = cameras.map((camera) =>
+    navigator.mediaDevices.getUserMedia({
       audio: false,
       video: { deviceId: { exact: camera.deviceId } },
-    });
-  });
+    })
+  );
   // wait for access to ALL the streams
   const streams = await Promise.all(streamPromises).catch(console.error);
   console.log({ streams });
@@ -63,6 +65,13 @@ async function requestIntialAccess() {
   });
 }
 
-startbutton.addEventListener('click', requestIntialAccess);
-
+startbutton?.addEventListener('click', requestIntialAccess);
+videoHolder?.addEventListener('click', (e: MouseEvent) => {
+  if (
+    e.target instanceof HTMLVideoElement &&
+    'requestPictureInPicture' in e.target
+  ) {
+    e.target.requestPictureInPicture();
+  }
+});
 requestIntialAccess();

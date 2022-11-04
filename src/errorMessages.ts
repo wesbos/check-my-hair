@@ -38,7 +38,7 @@ export const errorMessages: UserMediaErrorMessage[] = [
   },
 ];
 
-export function getFriendlyErrorMessage(err: MediaStreamError): string {
+export function getFriendlyErrorMessage(err: Error): string {
   const errorMessage = errorMessages.find((error) => error.name === err.name);
   if (errorMessage) return errorMessage.message;
   return 'Oops - something went wrong!';
