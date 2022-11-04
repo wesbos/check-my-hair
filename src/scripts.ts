@@ -65,13 +65,29 @@ async function requestIntialAccess() {
   });
 }
 
+type Mode = 'picture-in-picture' | 'inline';
+interface SafariHTMLVideoElement extends HTMLVideoElement {
+  webkitSupportsPresentationMode: boolean;
+  webkitPresentationMode: Mode;
+  webkitSetPresentationMode: (mode: Mode) => void;
+}
+
 startbutton?.addEventListener('click', requestIntialAccess);
 videoHolder?.addEventListener('click', (e: MouseEvent) => {
-  if (
-    e.target instanceof HTMLVideoElement &&
-    'requestPictureInPicture' in e.target
-  ) {
-    e.target.requestPictureInPicture();
+  if (e.target instanceof HTMLVideoElement) {
+    const video = e.target;
+    if ('requestPictureInPicture' in e.target) {
+      video.requestPictureInPicture();
+    }
+    // Safari?
+    if ('webkitSupportsPresentationMode' in video) {
+      (video as SafariHTMLVideoElement).webkitSetPresentationMode(
+        (video as SafariHTMLVideoElement).webkitPresentationMode ===
+          'picture-in-picture'
+          ? 'inline'
+          : 'picture-in-picture'
+      );
+    }
   }
 });
 requestIntialAccess();
