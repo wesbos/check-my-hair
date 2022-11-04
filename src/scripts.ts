@@ -79,7 +79,7 @@ videoHolder?.addEventListener('click', (e: MouseEvent) => {
     if ('requestPictureInPicture' in e.target) {
       video.requestPictureInPicture();
     }
-    // Safari?
+    // Safari? tHis doesnt work
     if ('webkitSupportsPresentationMode' in video) {
       (video as SafariHTMLVideoElement).webkitSetPresentationMode(
         (video as SafariHTMLVideoElement).webkitPresentationMode ===
