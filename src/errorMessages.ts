@@ -6,35 +6,35 @@ interface UserMediaErrorMessage {
 export const errorMessages: UserMediaErrorMessage[] = [
   {
     name: 'NotFoundError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'DevicesNotFoundError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'NotReadableError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'TrackStartError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'OverconstrainedError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'ConstraintNotSatisfiedError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'NotAllowedError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
   {
     name: 'PermissionDeniedError',
-    message: 'Looks like we cant access your webcam',
+    message: `Looks like we can't access your webcam`,
   },
 ];
 
