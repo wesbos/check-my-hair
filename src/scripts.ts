@@ -32,6 +32,19 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo) {
 async function requestIntialAccess() {
   // Check elements exist
   if (!videoHolder) return;
+  // Initialize settings
+  const mirrorCheckbox = document.getElementById('mirror') as HTMLInputElement;
+  mirrorCheckbox.addEventListener('input', () => {
+    localStorage.setItem(
+      'settings',
+      JSON.stringify({ mirror: mirrorCheckbox.checked })
+    );
+  });
+  const settings = localStorage.getItem('settings');
+  if (settings) {
+    const { mirror } = JSON.parse(settings);
+    mirrorCheckbox.checked = !!mirror;
+  }
   // clear out old cameras
   videoHolder.innerHTML = '';
   const stream = await navigator.mediaDevices.getUserMedia({
