@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "parcel index.html",
+    "start": "vite --port 8888",
     "build:tsc": "tsc --outDir build/js",
     "build": "parcel build index.html --out-dir docs"
   },
@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "parcel-bundler": "^1.12.4",
-    "vite": "^3.2.2"
+    "vite": "^3.2.5"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.42.0",

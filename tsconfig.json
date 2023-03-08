@@ -4,6 +4,7 @@
   ],
   "compilerOptions": {
     "strict": true,
+    "target": "esnext",
     "lib": [
       "ESNext",
       "DOM",

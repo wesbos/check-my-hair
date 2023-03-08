@@ -106,3 +106,7 @@ button:hover {
 a {
   color: var(--yellow);
 }
+
+.cameras:not(:has(.list>li)) {
+  display: none;
+}
