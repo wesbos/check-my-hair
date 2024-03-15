@@ -57,7 +57,7 @@ async function getCameras() {
 function createVideoElementFromCamera(camera: MediaDeviceInfo) {
   const markup = /* html */ `
     <div class="camera">
-      <video autoplay playsinline muted></video>
+      <video autoplay playsinline muted controls></video>
       <div class="controls">
         <p>${camera.label}</p>
         <button class="ignore" data-id="${
