@@ -1,15 +1,21 @@
 {
   "include": [
-    "./**/*"
+    "./src/**/*",
+    "./index.html"
   ],
   "compilerOptions": {
     "strict": true,
-    "target": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "lib": [
       "ESNext",
       "DOM",
       "DOM.Iterable"
     ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "isolatedModules": true
   }
 }

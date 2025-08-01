@@ -2,7 +2,7 @@ export function setHandler(render: () => void) {
   return {
     get(target, prop, receiver) {
       const value = target[prop];
-      if (!value instanceof Function) {
+      if (!(value instanceof Function)) {
         return value;
       }
 
