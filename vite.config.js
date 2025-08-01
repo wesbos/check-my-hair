@@ -10,9 +10,5 @@ export default defineConfig({
   server: {
     port: 8888,
     open: true,
-  },
-  // Ensure proper handling of TypeScript
-  esbuild: {
-    target: 'esnext',
-  },
+  }
 });
