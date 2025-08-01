@@ -47,10 +47,18 @@ function handleError(err: Error) {
 
 async function getCameras() {
   const devices = await navigator.mediaDevices.enumerateDevices();
+  const seenDeviceIds = new Set<string>();
   const cameras = devices
     .filter((device) => device.kind === 'videoinput')
     .filter((device) => !ignoredCameras.has(device.deviceId))
-    .filter((device) => !ignoredCameras.has(device.label));
+    .filter((device) => !ignoredCameras.has(device.label))
+    .filter((device) => {
+      if (seenDeviceIds.has(device.deviceId)) {
+        return false;
+      }
+      seenDeviceIds.add(device.deviceId);
+      return true;
+    });
   return cameras;
 }
 
