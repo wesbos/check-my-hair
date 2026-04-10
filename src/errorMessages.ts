@@ -36,6 +36,10 @@ export const errorMessages: UserMediaErrorMessage[] = [
     name: 'PermissionDeniedError',
     message: `Looks like we can't access your webcam`,
   },
+  {
+    name: 'AbortError',
+    message: `Camera timed out trying to start — it may be in use by another app`,
+  },
 ];
 
 export function getFriendlyErrorMessage(err: Error): string {
