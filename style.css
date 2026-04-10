@@ -119,6 +119,22 @@ video {
   cursor: grabbing;
 }
 
+.camera-inactive .video-area {
+  cursor: pointer;
+}
+
+.camera-inactive .video-area::after {
+  content: '▶';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 28px;
+}
+
 .camera-ignored {
   opacity: 0.4;
   cursor: default;

@@ -247,7 +247,7 @@ function createIgnoredCameraCard(label: string, index: number) {
 function createVideoElementFromCamera(camera: MediaDeviceInfo, index: number) {
   const cameraKey = camera.label || camera.deviceId;
   const markup = /* html */ `
-    <div class="camera" draggable="true" data-camera-label="${cameraKey}" style="view-transition-name: camera-${index}">
+    <div class="camera" draggable="true" data-camera-label="${cameraKey}" data-device-id="${camera.deviceId}" data-group-id="${camera.groupId}" style="view-transition-name: camera-${index}">
       <div class="video-area">
         <video autoplay playsinline muted controls></video>
         <div class="audio-meter" aria-hidden="true">
@@ -320,6 +320,65 @@ function setupAudioMeter(card: HTMLElement, stream: MediaStream) {
   updateMeter();
 }
 
+function setupCardStream(card: HTMLElement, stream: MediaStream) {
+  const video = card.querySelector('video');
+  if (!video) return;
+  video.srcObject = stream;
+  card.classList.remove('camera-inactive');
+  setupAudioMeter(card, stream);
+
+  video.addEventListener('loadedmetadata', () => {
+    const track = stream.getVideoTracks()[0];
+    const select = card.querySelector<HTMLSelectElement>('.resolution-picker');
+    if (track && select) populateResolutionPicker(select, track, video);
+    if (track) {
+      const metaEl = card.querySelector('.camera-meta');
+      if (metaEl) {
+        metaEl.innerHTML = getCameraMetaTags(track)
+          .map((t) => `<span class="meta-tag">${t}</span>`)
+          .join('');
+      }
+    }
+  });
+
+  video.addEventListener('resize', () => {
+    const select = card.querySelector<HTMLSelectElement>('.resolution-picker');
+    if (select) syncResolutionPicker(select, video);
+  });
+
+  stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+    card.classList.add('camera-inactive');
+  });
+}
+
+async function activateCamera(card: HTMLElement) {
+  if (!videoHolder) return;
+  const deviceId = card.dataset.deviceId;
+  const groupId = card.dataset.groupId;
+  if (!deviceId) return;
+
+  const allDevices = await navigator.mediaDevices.enumerateDevices();
+  const matchingMic = allDevices.find(
+    (d) =>
+      d.kind === 'audioinput' &&
+      d.groupId === groupId &&
+      groupId !== ''
+  );
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: matchingMic
+        ? { deviceId: { exact: matchingMic.deviceId } }
+        : false,
+      video: { deviceId: { exact: deviceId } },
+    });
+    setupCardStream(card, stream);
+    createIcons({ icons: lucideIcons });
+  } catch (err) {
+    console.error('Failed to activate camera:', err);
+  }
+}
+
 async function requestIntialAccess() {
   const generation = ++accessGeneration;
   if (!videoHolder) return;
@@ -382,28 +441,7 @@ async function requestIntialAccess() {
     const result = streamResults[activeIdx++];
 
     if (result?.status === 'fulfilled' && video) {
-      const stream = result.value;
-      video.srcObject = stream;
-      setupAudioMeter(card, stream);
-      video.addEventListener('loadedmetadata', () => {
-        const track = stream.getVideoTracks()[0];
-        const select = card?.querySelector<HTMLSelectElement>('.resolution-picker');
-        if (track && select) {
-          populateResolutionPicker(select, track, video);
-        }
-        if (track) {
-          const metaEl = card?.querySelector('.camera-meta');
-          if (metaEl) {
-            metaEl.innerHTML = getCameraMetaTags(track)
-              .map((t) => `<span class="meta-tag">${t}</span>`)
-              .join('');
-          }
-        }
-      });
-      video.addEventListener('resize', () => {
-        const select = card?.querySelector<HTMLSelectElement>('.resolution-picker');
-        if (select) syncResolutionPicker(select, video);
-      });
+      setupCardStream(card, result.value);
     } else if (result?.status === 'rejected') {
       if (!card) return;
       card.classList.add('camera-error');
@@ -526,10 +564,19 @@ function updateVideoTransform(area: HTMLElement) {
 startbutton?.addEventListener('click', requestIntialAccess);
 
 videoHolder?.addEventListener('click', (e: MouseEvent) => {
+  const card = (e.target as HTMLElement).closest<HTMLElement>('.camera');
+  if (!card) return;
+
+  if (card.classList.contains('camera-inactive')) {
+    const clickedArea = (e.target as HTMLElement).closest('.video-area');
+    if (clickedArea) {
+      activateCamera(card);
+      return;
+    }
+  }
+
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
   if (!btn) return;
-  const card = btn.closest<HTMLElement>('.camera');
-  if (!card) return;
   const video = card.querySelector('video');
 
   if (btn.classList.contains('btn-photo')) {
