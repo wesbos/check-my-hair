@@ -68,6 +68,7 @@ function ignoreCamera(btn: HTMLElement) {
 }
 
 function handleError(err: Error) {
+  console.error(err);
   if (!text) throw new Error('shit');
   text.textContent = getFriendlyErrorMessage(err);
 }
