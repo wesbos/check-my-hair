@@ -9,9 +9,11 @@ import {
   RectangleHorizontal,
   X,
   Eye,
+  FlipHorizontal2,
+  RotateCw,
 } from 'lucide';
 
-const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye };
+const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye, FlipHorizontal2, RotateCw };
 
 const videoHolder = document.querySelector<HTMLDivElement>('.video');
 const text = document.querySelector<HTMLParagraphElement>('.text');
@@ -258,6 +260,8 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo, index: number) {
         <div class="actions">
           <button class="btn-photo" title="Take photo"><i data-lucide="camera"></i></button>
           <button class="btn-record" title="Record video"><i data-lucide="circle"></i><i data-lucide="square"></i></button>
+          <button class="btn-mirror" title="Mirror"><i data-lucide="flip-horizontal-2"></i></button>
+          <button class="btn-rotate" title="Rotate"><i data-lucide="rotate-cw"></i></button>
           <button class="btn-pip" title="Picture in Picture"><i data-lucide="picture-in-picture-2"></i></button>
           <button class="btn-fullscreen" title="Fullscreen"><i data-lucide="maximize"></i></button>
           <button class="btn-widescreen" title="Widescreen"><i data-lucide="rectangle-horizontal"></i></button>
@@ -506,6 +510,19 @@ function toggleWidescreen(card: HTMLElement) {
   }
 }
 
+function updateVideoTransform(area: HTMLElement) {
+  const video = area.querySelector<HTMLElement>('video');
+  if (!video) return;
+  const mirrored = area.dataset.mirrored === 'true';
+  const rotation = parseInt(area.dataset.rotation || '0', 10);
+  const transforms: string[] = [];
+  if (mirrored) transforms.push('scaleX(-1)');
+  if (rotation) transforms.push(`rotate(${rotation}deg)`);
+  video.style.transform = transforms.join(' ') || '';
+  const isVertical = rotation === 90 || rotation === 270;
+  video.style.aspectRatio = isVertical ? '9/16' : '';
+}
+
 startbutton?.addEventListener('click', requestIntialAccess);
 
 videoHolder?.addEventListener('click', (e: MouseEvent) => {
@@ -519,6 +536,20 @@ videoHolder?.addEventListener('click', (e: MouseEvent) => {
     takePhoto(card);
   } else if (btn.classList.contains('btn-record')) {
     toggleRecording(card);
+  } else if (btn.classList.contains('btn-mirror')) {
+    const area = card.querySelector<HTMLElement>('.video-area');
+    if (area) {
+      const current = area.dataset.mirrored === 'true';
+      area.dataset.mirrored = String(!current);
+      updateVideoTransform(area);
+    }
+  } else if (btn.classList.contains('btn-rotate')) {
+    const area = card.querySelector<HTMLElement>('.video-area');
+    if (area) {
+      const current = parseInt(area.dataset.rotation || '0', 10);
+      area.dataset.rotation = String((current + 90) % 360);
+      updateVideoTransform(area);
+    }
   } else if (btn.classList.contains('btn-pip') && video) {
     video.requestPictureInPicture();
   } else if (btn.classList.contains('btn-fullscreen')) {

@@ -51,10 +51,17 @@ video {
   display: block;
   border-radius: 0;
   max-height: 100vh;
+  transition: transform 0.3s ease;
 }
 
 .video-area {
   position: relative;
+  overflow: hidden;
+}
+
+.video-area[data-mirrored="true"] ~ .controls .btn-mirror,
+.video-area[data-rotation]:not([data-rotation="0"]) ~ .controls .btn-rotate {
+  color: var(--yellow);
 }
 
 .audio-meter {
@@ -187,6 +194,7 @@ video {
   margin: 0;
   flex: 1;
   font-size: 13px;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
