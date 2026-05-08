@@ -549,16 +549,23 @@ function toggleWidescreen(card: HTMLElement) {
 }
 
 function updateVideoTransform(area: HTMLElement) {
-  const video = area.querySelector<HTMLElement>('video');
+  const video = area.querySelector<HTMLVideoElement>('video');
   if (!video) return;
   const mirrored = area.dataset.mirrored === 'true';
   const rotation = parseInt(area.dataset.rotation || '0', 10);
+  const isVertical = rotation === 90 || rotation === 270;
+
   const transforms: string[] = [];
   if (mirrored) transforms.push('scaleX(-1)');
   if (rotation) transforms.push(`rotate(${rotation}deg)`);
+  if (isVertical) {
+    // Scale so the rotated video fits within the unrotated container dimensions
+    const vw = video.videoWidth || 16;
+    const vh = video.videoHeight || 9;
+    transforms.push(`scale(${Math.min(vw / vh, vh / vw)})`);
+  }
   video.style.transform = transforms.join(' ') || '';
-  const isVertical = rotation === 90 || rotation === 270;
-  video.style.aspectRatio = isVertical ? '9/16' : '';
+  video.style.aspectRatio = '';
 }
 
 startbutton?.addEventListener('click', requestIntialAccess);
