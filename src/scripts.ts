@@ -11,9 +11,10 @@ import {
   Eye,
   FlipHorizontal2,
   RotateCw,
+  Grid3x3,
 } from 'lucide';
 
-const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye, FlipHorizontal2, RotateCw };
+const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye, FlipHorizontal2, RotateCw, Grid3x3 };
 
 const videoHolder = document.querySelector<HTMLDivElement>('.video');
 const text = document.querySelector<HTMLParagraphElement>('.text');
@@ -23,6 +24,10 @@ let accessGeneration = 0;
 interface CameraSettings {
   label: string;
   ignored: boolean;
+  mirrored?: boolean;
+  rotation?: number;
+  grid?: boolean;
+  widescreen?: boolean;
 }
 
 const REGISTRY_KEY = 'cameraRegistry';
@@ -54,6 +59,32 @@ if (legacyIgnored) {
 
 function saveRegistry() {
   localStorage.setItem(REGISTRY_KEY, JSON.stringify(cameraRegistry));
+}
+
+function updateCameraSetting(label: string, patch: Partial<CameraSettings>) {
+  let entry = cameraRegistry.find((c) => c.label === label);
+  if (!entry) {
+    entry = { label, ignored: false };
+    cameraRegistry.push(entry);
+  }
+  Object.assign(entry, patch);
+  saveRegistry();
+}
+
+function applyCameraSettings(card: HTMLElement) {
+  const label = card.dataset.cameraLabel;
+  if (!label) return;
+  const entry = cameraRegistry.find((c) => c.label === label);
+  if (!entry) return;
+
+  const area = card.querySelector<HTMLElement>('.video-area');
+  if (area) {
+    if (entry.mirrored) area.dataset.mirrored = 'true';
+    if (entry.rotation) area.dataset.rotation = String(entry.rotation);
+    if (entry.grid) area.dataset.grid = 'true';
+    updateVideoTransform(area);
+  }
+  if (entry.widescreen) card.classList.add('widescreen');
 }
 
 function ignoreCamera(btn: HTMLElement) {
@@ -232,7 +263,6 @@ function getCameraMetaTags(track: MediaStreamTrack): string[] {
 function createIgnoredCameraCard(label: string, index: number) {
   const markup = /* html */ `
     <div class="camera camera-ignored" draggable="true" data-camera-label="${label}" style="view-transition-name: camera-${index}">
-      <div class="ignored-placeholder"></div>
       <div class="controls">
         <p class="camera-label">${label}</p>
         <div class="actions">
@@ -250,6 +280,7 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo, index: number) {
     <div class="camera" draggable="true" data-camera-label="${cameraKey}" data-device-id="${camera.deviceId}" data-group-id="${camera.groupId}" style="view-transition-name: camera-${index}">
       <div class="video-area">
         <video autoplay playsinline muted controls></video>
+        <div class="grid-overlay" aria-hidden="true"></div>
         <div class="audio-meter" aria-hidden="true">
           <div class="audio-meter-fill"></div>
         </div>
@@ -262,6 +293,7 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo, index: number) {
           <button class="btn-record" title="Record video"><i data-lucide="circle"></i><i data-lucide="square"></i></button>
           <button class="btn-mirror" title="Mirror"><i data-lucide="flip-horizontal-2"></i></button>
           <button class="btn-rotate" title="Rotate"><i data-lucide="rotate-cw"></i></button>
+          <button class="btn-grid" title="Centering grid"><i data-lucide="grid-3x3"></i></button>
           <button class="btn-pip" title="Picture in Picture"><i data-lucide="picture-in-picture-2"></i></button>
           <button class="btn-fullscreen" title="Fullscreen"><i data-lucide="maximize"></i></button>
           <button class="btn-widescreen" title="Widescreen"><i data-lucide="rectangle-horizontal"></i></button>
@@ -326,8 +358,11 @@ function setupCardStream(card: HTMLElement, stream: MediaStream) {
   video.srcObject = stream;
   card.classList.remove('camera-inactive');
   setupAudioMeter(card, stream);
+  applyCameraSettings(card);
 
   video.addEventListener('loadedmetadata', () => {
+    const area = card.querySelector<HTMLElement>('.video-area');
+    if (area) updateVideoTransform(area);
     const track = stream.getVideoTracks()[0];
     const select = card.querySelector<HTMLSelectElement>('.resolution-picker');
     if (track && select) populateResolutionPicker(select, track, video);
@@ -426,7 +461,14 @@ async function requestIntialAccess() {
   videoHolder.innerHTML = '';
   let activeIdx = 0;
 
-  allCameras.forEach((camera, gridIdx) => {
+  // Render active cameras first, then ignored ones, so the small ignored
+  // bars don't leave gaps in the middle of the grid.
+  const orderedCameras = [
+    ...activeCameras,
+    ...allCameras.filter((c) => isCameraIgnored(c)),
+  ];
+
+  orderedCameras.forEach((camera, gridIdx) => {
     const key = camera.label || camera.deviceId;
     const ignored = isCameraIgnored(camera);
 
@@ -525,7 +567,12 @@ function toggleWidescreen(card: HTMLElement) {
   videoHolder
     .querySelectorAll('.widescreen')
     .forEach((el) => el.classList.remove('widescreen'));
-  if (isWide) return;
+  // Widescreen is exclusive, so clear it from every other camera.
+  cameraRegistry.forEach((c) => { c.widescreen = false; });
+  if (isWide) {
+    saveRegistry();
+    return;
+  }
 
   const doIt = () => {
     card.classList.add('widescreen');
@@ -536,9 +583,11 @@ function toggleWidescreen(card: HTMLElement) {
       if (idx > 0) {
         const [entry] = cameraRegistry.splice(idx, 1);
         cameraRegistry.unshift(entry);
-        saveRegistry();
       }
+      const entry = cameraRegistry.find((c) => c.label === label);
+      if (entry) entry.widescreen = true;
     }
+    saveRegistry();
   };
 
   if ('startViewTransition' in document) {
@@ -593,16 +642,28 @@ videoHolder?.addEventListener('click', (e: MouseEvent) => {
   } else if (btn.classList.contains('btn-mirror')) {
     const area = card.querySelector<HTMLElement>('.video-area');
     if (area) {
-      const current = area.dataset.mirrored === 'true';
-      area.dataset.mirrored = String(!current);
+      const next = area.dataset.mirrored !== 'true';
+      area.dataset.mirrored = String(next);
       updateVideoTransform(area);
+      const label = card.dataset.cameraLabel;
+      if (label) updateCameraSetting(label, { mirrored: next });
     }
   } else if (btn.classList.contains('btn-rotate')) {
     const area = card.querySelector<HTMLElement>('.video-area');
     if (area) {
-      const current = parseInt(area.dataset.rotation || '0', 10);
-      area.dataset.rotation = String((current + 90) % 360);
+      const next = (parseInt(area.dataset.rotation || '0', 10) + 90) % 360;
+      area.dataset.rotation = String(next);
       updateVideoTransform(area);
+      const label = card.dataset.cameraLabel;
+      if (label) updateCameraSetting(label, { rotation: next });
+    }
+  } else if (btn.classList.contains('btn-grid')) {
+    const area = card.querySelector<HTMLElement>('.video-area');
+    if (area) {
+      const next = area.dataset.grid !== 'true';
+      area.dataset.grid = String(next);
+      const label = card.dataset.cameraLabel;
+      if (label) updateCameraSetting(label, { grid: next });
     }
   } else if (btn.classList.contains('btn-pip') && video) {
     video.requestPictureInPicture();

@@ -60,8 +60,61 @@ video {
 }
 
 .video-area[data-mirrored="true"] ~ .controls .btn-mirror,
-.video-area[data-rotation]:not([data-rotation="0"]) ~ .controls .btn-rotate {
+.video-area[data-rotation]:not([data-rotation="0"]) ~ .controls .btn-rotate,
+.video-area[data-grid="true"] ~ .controls .btn-grid {
   color: var(--yellow);
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  background:
+    /* center vertical line (yellow) */
+    linear-gradient(
+      to right,
+      transparent calc(50% - 1.5px),
+      rgba(255, 198, 0, 0.8) calc(50% - 1.5px),
+      rgba(255, 198, 0, 0.8) calc(50% + 1.5px),
+      transparent calc(50% + 1.5px)
+    ),
+    /* center horizontal line (yellow) */
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - 1.5px),
+      rgba(255, 198, 0, 0.8) calc(50% - 1.5px),
+      rgba(255, 198, 0, 0.8) calc(50% + 1.5px),
+      transparent calc(50% + 1.5px)
+    ),
+    /* rule-of-thirds vertical lines */
+    linear-gradient(
+      to right,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.4) 33.33%,
+      rgba(255, 255, 255, 0.4) calc(33.33% + 2px),
+      transparent calc(33.33% + 2px),
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.4) 66.66%,
+      rgba(255, 255, 255, 0.4) calc(66.66% + 2px),
+      transparent calc(66.66% + 2px)
+    ),
+    /* rule-of-thirds horizontal lines */
+    linear-gradient(
+      to bottom,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.4) 33.33%,
+      rgba(255, 255, 255, 0.4) calc(33.33% + 2px),
+      transparent calc(33.33% + 2px),
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.4) 66.66%,
+      rgba(255, 255, 255, 0.4) calc(66.66% + 2px),
+      transparent calc(66.66% + 2px)
+    );
+}
+
+.video-area[data-grid="true"] .grid-overlay {
+  display: block;
 }
 
 .audio-meter {
@@ -138,15 +191,11 @@ video {
 .camera-ignored {
   opacity: 0.4;
   cursor: default;
+  align-self: start;
 }
 
 .camera-ignored:hover {
   opacity: 0.6;
-}
-
-.ignored-placeholder {
-  aspect-ratio: 16 / 9;
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .camera-ignored .btn-unignore {
