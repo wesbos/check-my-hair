@@ -12,9 +12,11 @@ import {
   FlipHorizontal2,
   RotateCw,
   Grid3x3,
+  Timer,
+  TimerOff,
 } from 'lucide';
 
-const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye, FlipHorizontal2, RotateCw, Grid3x3 };
+const lucideIcons = { Camera, Circle, Square, PictureInPicture2, Maximize, RectangleHorizontal, X, Eye, FlipHorizontal2, RotateCw, Grid3x3, Timer, TimerOff };
 
 const videoHolder = document.querySelector<HTMLDivElement>('.video');
 const text = document.querySelector<HTMLParagraphElement>('.text');
@@ -290,6 +292,7 @@ function createVideoElementFromCamera(camera: MediaDeviceInfo, index: number) {
         <select class="resolution-picker"><option>—</option></select>
         <div class="actions">
           <button class="btn-photo" title="Take photo"><i data-lucide="camera"></i></button>
+          <button class="btn-interval" title="Take a photo every 2 seconds"><i data-lucide="timer"></i><i data-lucide="timer-off"></i></button>
           <button class="btn-record" title="Record video"><i data-lucide="circle"></i><i data-lucide="square"></i></button>
           <button class="btn-mirror" title="Mirror"><i data-lucide="flip-horizontal-2"></i></button>
           <button class="btn-rotate" title="Rotate"><i data-lucide="rotate-cw"></i></button>
@@ -518,6 +521,32 @@ function takePhoto(card: HTMLElement) {
   });
 }
 
+const PHOTO_INTERVAL_MS = 2000;
+const activeIntervals = new Map<HTMLElement, number>();
+
+function toggleIntervalPhotos(card: HTMLElement) {
+  const existing = activeIntervals.get(card);
+  if (existing !== undefined) {
+    clearInterval(existing);
+    activeIntervals.delete(card);
+    card.classList.remove('interval-shooting');
+    return;
+  }
+
+  takePhoto(card);
+  const id = window.setInterval(() => {
+    // Stop if the camera card was removed (e.g. cameras re-rendered)
+    if (!card.isConnected) {
+      clearInterval(id);
+      activeIntervals.delete(card);
+      return;
+    }
+    takePhoto(card);
+  }, PHOTO_INTERVAL_MS);
+  activeIntervals.set(card, id);
+  card.classList.add('interval-shooting');
+}
+
 const activeRecorders = new Map<HTMLElement, MediaRecorder>();
 
 function toggleRecording(card: HTMLElement) {
@@ -637,6 +666,8 @@ videoHolder?.addEventListener('click', (e: MouseEvent) => {
 
   if (btn.classList.contains('btn-photo')) {
     takePhoto(card);
+  } else if (btn.classList.contains('btn-interval')) {
+    toggleIntervalPhotos(card);
   } else if (btn.classList.contains('btn-record')) {
     toggleRecording(card);
   } else if (btn.classList.contains('btn-mirror')) {

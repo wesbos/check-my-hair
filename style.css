@@ -228,6 +228,22 @@ video {
   color: #ff3333;
 }
 
+.btn-interval .lucide-timer-off {
+  display: none;
+}
+
+.camera.interval-shooting .btn-interval .lucide-timer {
+  display: none;
+}
+
+.camera.interval-shooting .btn-interval .lucide-timer-off {
+  display: inline;
+}
+
+.camera.interval-shooting .btn-interval {
+  color: #ff3333;
+}
+
 @keyframes recording-pulse {
   0%,
   100% {
